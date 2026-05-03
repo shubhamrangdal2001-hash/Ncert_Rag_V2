@@ -2,6 +2,8 @@
 ### Week 10 · Production-Grade RAG Pipeline
 **PG Diploma AI-ML & Agentic AI Engineering · IIT Gandhinagar · Cohort 1**
 
+🎥 **Loom Demo:** [Watch 3-min walkthrough](#) ← *(link to be added before submission)*
+
 ---
 
 ## What This Project Does
@@ -56,7 +58,9 @@ Ncert_rag_V2/
 ├── prompt_diff.md             ← V1 permissive vs V2 strict (verbatim)
 ├── fix_memo.md                ← diagnosis, fix choice, honest delta
 ├── requirements.txt
+├── .env.example               ← copy to .env and fill keys
 ├── .env                       ← secrets (gitignored — never committed)
+├── reflection.md              ← Wk10 reflection questionnaire
 └── .gitignore
 ```
 
@@ -67,6 +71,10 @@ Ncert_rag_V2/
 ```bash
 # 1. Navigate to project
 cd C:\Users\shubh\Project\Ncert_rag_V2
+
+# !! First-time setup: copy env template
+copy .env.example .env
+# Then edit .env and paste your GROQ_API_KEY
 
 # 2. Create and activate virtual environment
 python -m venv venv
@@ -303,6 +311,23 @@ After launching `python main.py --chat`:
 | `:debug` | Toggle retrieved chunk display |
 | `:history` | Show questions asked this session |
 | `:quit` / `:q` | Exit |
+
+---
+
+## Required Files Checklist
+
+| File | Purpose | Status |
+|------|---------|--------|
+| `wk10_chunks.json` | 120 token-aware chunks with metadata | ✅ |
+| `chunking_diff.md` | Wk9 vs Wk10 chunking comparison | ✅ |
+| `eval/retrieval_log.json` | 10-query retrieval log, top-1 hit rate | ✅ |
+| `retrieval_misses.md` | Root-cause analysis of misses | ✅ |
+| `prompt_diff.md` | PROMPT_V1 vs V2 verbatim comparison | ✅ |
+| `eval/eval_scored.csv` | 12-Q, 3 axes, before fix | ✅ |
+| `eval/eval_v2_scored.csv` | 12-Q, 3 axes, after threshold gate | ✅ |
+| `fix_memo.md` | Single-variable fix, honest delta | ✅ |
+| `reflection.md` | Wk10 reflection questionnaire | ✅ |
+| `.env.example` | Empty key placeholders | ✅ |
 
 ---
 

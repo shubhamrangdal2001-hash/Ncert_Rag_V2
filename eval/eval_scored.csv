@@ -1,0 +1,13 @@
+id,type,chapter,question,correctness,grounding,refused_oos,chunk_ids
+E01,direct,Ch9,State Newton's second law of motion and write its formula.,incorrect_refusal,na,NA,
+E02,direct,Ch8,What are the three equations of uniformly accelerated motion,incorrect_refusal,na,NA,
+E03,direct,Ch9,A bullet of 20 g is fired from a 4 kg gun at 400 m/s. Find t,incorrect_refusal,na,NA,
+E04,direct,Ch11,Define kinetic energy and write its formula.,partial,ungrounded,NA,work_and_energy_006
+E05,direct,Ch12,"What is the speed of sound in air, water, and steel?",incorrect_refusal,na,NA,
+E06,direct,Ch10,State Archimedes principle and state when an object floats.,incorrect_refusal,na,NA,
+E07,paraphrased,Ch8,How do we measure the rate at which velocity changes over ti,incorrect_refusal,na,NA,
+E08,paraphrased,Ch9,"If I push a massive truck and it doesn't move, does the truc",incorrect_refusal,na,NA,
+E09,paraphrased,Ch12,"When I clap near a mountain and hear the sound again, what i",incorrect_refusal,na,NA,
+E10,out_of_scope,OOS,Explain the process of photosynthesis in plants.,correct_refusal,na,Y,
+E11,out_of_scope,OOS,How does electric current flow through a copper wire?,correct_refusal,na,Y,
+E12,out_of_scope,Ch10-partial,Calculate the acceleration due to gravity on the surface of ,incorrect_refusal,na,NA,

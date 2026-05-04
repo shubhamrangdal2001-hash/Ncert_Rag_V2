@@ -178,4 +178,22 @@ Every Wk10 concept and exactly where it lives in this repo:
 
 ---
 
+## Q11 — PDF Loader Choice: Why PyMuPDF over OpenDataLoader-PDF?
+
+The §4.5 expert hint is direct: *"Stick with PyMuPDF if it didn't break tables."*
+
+**Validation performed:** Opened `wk10_chunks.json` and searched for `content_type == "worked_example"`. All 36 worked examples are intact — problem statement and solution are in the same chunk. The `in_example` state flag in `stage1_chunking.py` correctly handles what PyMuPDF delivers.
+
+**Why not switch?**
+| Loader | Reason not chosen |
+|--------|------------------|
+| OpenDataLoader-PDF | PyMuPDF already works on NCERT chapters; switching adds risk with no measurable gain on this corpus |
+| Docling (IBM) | Heavier dependency footprint; stronger on research papers with LaTeX equations, not NCERT textbooks |
+| Marker | GPL-3 licence — not appropriate if PariShiksha commercialises the product |
+| Unstructured.io | Designed for mixed-format corpora (PDF + DOCX + HTML); overkill for pure-PDF NCERT |
+
+**When OpenDataLoader-PDF would be the right call:** If `wk10_chunks.json` showed broken tables (answer column in separate chunk from question column), switching to `format="markdown"` mode would be the smallest fix. The bounding box JSON output (`format="json"`) would also directly enable the teacher's ask for "specific 200 words" source highlighting in a future demo.
+
+---
+
 *Submitted: Week 10 · Sunday May 3, 2026 · 11:00 PM IST deadline*

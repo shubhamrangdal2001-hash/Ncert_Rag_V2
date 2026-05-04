@@ -120,4 +120,62 @@ Reference: https://arxiv.org/abs/2309.15217
 
 ---
 
+## Q9 — Wk9 Principles Applied in v2.0 (§2.2 carry-forward)
+
+The seven principles from Wk9 and where they show up in this codebase:
+
+**① "Print retrieved chunks before blaming the model"**
+Applied in `stage3_generation.py`: `build_context()` prints `top_k_chunks` to stdout before the LLM call when `--debug` flag is set. Also applied in `ask()` in `stage5_fix.py` — the first debugging step when `incorrect_refusal` appeared was inspecting the raw similarity scores (found the `0.075` issue on E01). Violation on first pass of Stage 5: I set `OOS_THRESHOLD = 0.30` without first printing the score distribution. Fixed after 45 minutes of confusion.
+
+**② "Index-time and query-time tokenisation must match"**
+Applied in `stage2_retrieval.py`: `HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")` is instantiated **once** in `build_hybrid_retriever()` and passed to both the Chroma collection (index) and the retrieval call (query). The model is imported via constant `EMBED_MODEL_NAME = "BAAI/bge-small-en-v1.5"` and never re-instantiated. The `collection.count() == 0` gate (Engineering Principle #3) ensures this embedding path runs once.
+
+**③ "Chunk boundaries that split an example from its solution destroy retrieval"**
+This is Stage 1's core design decision. `stage1_chunking.py` uses a boolean `in_example` flag: when `## Example` is detected, the chunker enters example mode and accumulates text until the next section heading, regardless of token count. Result: 36 worked examples are intact in `wk10_chunks.json` vs 8 that were split in Wk9.
+
+**④ "Only answer from context" is weaker than "refuse if not in context"**
+Explicitly demonstrated in Stage 3's `prompt_diff.md`. PROMPT_V1 says `"Use the provided context"` — produces hallucination on electricity question. PROMPT_V2 adds the second sentence: `"If the answer is not present, reply exactly: 'I don't have that in my study materials.'"` — produces clean refusal. Both verbatim responses are saved in `prompt_diff.md`.
+
+**⑤ "Set temperature = 0 for evaluation"**
+Applied in `stage3_generation.py` line: `ChatGroq(model=MODEL_NAME, temperature=0)`. The `0` is hardcoded for eval mode. `stage4_evaluation.py` and `stage5_fix.py` both import and use this same instantiation, ensuring all 12-Q scores are reproducible across runs.
+
+**⑥ "The gap between good chunking and bad chunking is larger than the gap between LLMs"**
+Validated against data: `retrieval_log.json` shows that even with Groq's 70B model, queries where the chunker produced a split worked example (e.g., Q07 in v1 retrieval) returned wrong answers. Once the chunker was fixed (worked examples kept intact), the same LLM answered correctly — without any prompt change.
+
+**⑦ "Single-variable iteration — commit each change"**
+Each Stage has a dedicated commit. When Stage 5's threshold was wrong (`0.30`), the fix was one commit (`ac6a06f`) changing exactly one line. When the OOS threshold was calibrated to `0.08`, a new `eval_v2_scored.csv` was generated and the delta was documented in `fix_memo.md`. No prompt, model, or chunk changes were mixed with the threshold change.
+
+---
+
+## Q10 — Concept-to-Code Map (§3 traceability)
+
+Every Wk10 concept and exactly where it lives in this repo:
+
+| Concept | File | Specific Location |
+|---------|------|------------------|
+| Dense embeddings (bge-small-en) | `stage2_retrieval.py` | `HuggingFaceEmbeddings(model_name="BAAI/bge-small-en-v1.5")` |
+| ChromaDB vector store (cosine) | `stage2_retrieval.py` | `PersistentClient(path="./chroma_wk10")`, cosine space |
+| `collection.count()==0` gate | `stage2_retrieval.py` | Prevents re-embedding on restart |
+| Top-k retrieval + score reading | `stage2_retrieval.py` | `retrieve(query, k=5)` returns chunks + similarity scores |
+| BM25 lexical retrieval | `stage2_retrieval.py` | `BM25Retriever.from_documents(chunks)` |
+| Hybrid RRF fusion | `stage2_retrieval.py` | `_rrf_fuse()` with k=60, weights [0.5, 0.5] |
+| Strict RAG prompt (refusal as constraint) | `stage3_generation.py` | `PROMPT_V2` — two-sentence refusal obligation |
+| Permissive vs strict prompt comparison | `prompt_diff.md` | Verbatim V1 vs V2 on 3 queries |
+| Citation format `[Source: chunk_id]` | `stage3_generation.py` | `extract_citations()` + prompt instruction |
+| OOS — off-topic (biology) | `stage4_evaluation.py` | E10: photosynthesis — clean refusal |
+| OOS — plausibly answerable | `stage4_evaluation.py` | E12: Moon gravity (formula in corpus, Moon value not) |
+| OOS — adversarial (retrieves relevant chunks) | `stage4_evaluation.py` | E11: electric current (retrieves Ch9 force chunks at ~0.05 sim) |
+| 3-axis eval (correct/grounded/refused_oos) | `stage4_evaluation.py` | `score_response()` function |
+| Failure-mode catalog diagnosis | `fix_memo.md` | E11 diagnosed as "AMBIGUOUS/MIXED STRUCTURE" |
+| Single-variable fix | `stage5_fix.py` | One change: `OOS_THRESHOLD = 0.08` gate |
+| Before/after honest delta | `eval_v2_scored.csv` vs `eval_scored.csv` | OOS +1, Correctness −2 documented |
+| Content-type-aware chunking | `stage1_chunking.py` | `detect_content_type()`, `in_example` flag |
+| Token-aware sizing (250 tokens) | `stage1_chunking.py` | `word_count * 1.3` BPE approximation |
+| Structure integrity (worked examples) | `stage1_chunking.py` | Example flush only on next `##` heading |
+| temperature=0 for eval reproducibility | `stage3_generation.py` | `ChatGroq(..., temperature=0)` |
+
+**Adversarial OOS confirmation:** E11 (*"How does electric current flow through a copper wire?"*) is the adversarial test case. It retrieves Ch9 Force chunks at similarity ~0.05 because "flow", "through", and "wire" loosely match force/motion text. Before Stage 5, the strict PROMPT_V2 alone failed to refuse it (`missed_refusal`). After adding the score gate (`sim < 0.08 → refuse before LLM call`), it became `correct_refusal`. This is precisely the failure mode the spec warns about: the model "dutifully generates from whatever context it was given, even if irrelevant."
+
+---
+
 *Submitted: Week 10 · Sunday May 3, 2026 · 11:00 PM IST deadline*

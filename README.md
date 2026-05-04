@@ -228,7 +228,7 @@ flowchart TD
     BM25["📝 BM25\nLexical Retriever"]
     LLM["🤖 Groq LLM\nllama-3.3-70b"]
     TextProcessor["✂️ Text Processor\nChunker Stage 1"]
-    NCERTDocs["📚 NCERT PDFs\nCh8–12 Physics"]
+    NCERTDocs["📚 NCERT PDFs\nCh1–12 Physics"]
     Logger["📋 Logger"]
 
     User -->|"Query"| API

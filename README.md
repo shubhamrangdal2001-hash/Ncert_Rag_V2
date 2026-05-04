@@ -218,50 +218,51 @@ Student query
 ## System Architecture Diagram
 
 ```mermaid
-%%{
-  config:
-    layout: elk
-}%%
-graph TB
-    User[User Interface]:::sky
-    API[REST API Layer]:::indigo
-    RAG[RAG Engine]:::violet
-    LLM[LLM Service]:::fuchsia
-    VectorDB[Vector Database]:::cyan
-    TextProcessor[Text Processor]:::teal
-    NCERTDocs[NCERT Documents]:::orange
-    Cache[Cache Layer]:::yellow
-    Auth[Authentication]:::rose
-    Logger[Logging Service]:::lime
-    
-    User -->|Query| API
-    API -->|Authenticate| Auth
-    Auth -->|Token Valid| API
-    API -->|Process Query| RAG
-    RAG -->|Check Cache| Cache
-    Cache -->|Hit/Miss| RAG
-    RAG -->|Embed & Retrieve| VectorDB
-    VectorDB -->|Relevant Docs| RAG
-    RAG -->|Context + Query| LLM
-    LLM -->|Generated Response| RAG
-    RAG -->|Store Cache| Cache
-    RAG -->|Response| API
-    API -->|Result| User
-    NCERTDocs -->|Ingest| TextProcessor
-    TextProcessor -->|Processed Text| VectorDB
-    API -->|Log Events| Logger
-    RAG -->|Log Events| Logger
-    
-    classDef sky stroke:#38bdf8,fill:#f0f9ff,color:#1e1b4b
-    classDef indigo stroke:#818cf8,fill:#eef2ff,color:#1e1b4b
-    classDef violet stroke:#a78bfa,fill:#f5f3ff,color:#1e1b4b
-    classDef fuchsia stroke:#e879f9,fill:#fdf4ff,color:#1e1b4b
-    classDef cyan stroke:#22d3ee,fill:#ecfeff,color:#1e1b4b
-    classDef teal stroke:#2dd4bf,fill:#f0fdfa,color:#1e1b4b
-    classDef orange stroke:#fb923c,fill:#fff7ed,color:#1e1b4b
-    classDef yellow stroke:#facc15,fill:#fefce8,color:#1e1b4b
-    classDef rose stroke:#fb7185,fill:#fff1f2,color:#1e1b4b
-    classDef lime stroke:#a3e635,fill:#f7fee7,color:#1e1b4b
+flowchart TD
+    User["🎓 User / Student"]
+    API["🔌 REST API Layer"]
+    Auth["🔐 Authentication"]
+    RAG["⚙️ RAG Engine"]
+    Cache["💾 Cache Layer"]
+    VectorDB["🗄️ ChromaDB\nbge-small-en-v1.5"]
+    BM25["📝 BM25\nLexical Retriever"]
+    LLM["🤖 Groq LLM\nllama-3.3-70b"]
+    TextProcessor["✂️ Text Processor\nChunker Stage 1"]
+    NCERTDocs["📚 NCERT PDFs\nCh8–12 Physics"]
+    Logger["📋 Logger"]
+
+    User -->|"Query"| API
+    API -->|"Authenticate"| Auth
+    Auth -->|"Token Valid"| API
+    API -->|"Process Query"| RAG
+    RAG -->|"Check Cache"| Cache
+    Cache -->|"Hit / Miss"| RAG
+    RAG -->|"Dense Embed"| VectorDB
+    RAG -->|"Lexical Search"| BM25
+    VectorDB -->|"Top-k Chunks"| RAG
+    BM25 -->|"Top-k Chunks"| RAG
+    RAG -->|"Context + Query"| LLM
+    LLM -->|"Grounded Answer"| RAG
+    RAG -->|"Store Result"| Cache
+    RAG -->|"Response + chunk_ids"| API
+    API -->|"Result"| User
+    NCERTDocs -->|"Ingest"| TextProcessor
+    TextProcessor -->|"wk10_chunks.json"| VectorDB
+    TextProcessor -->|"BM25 Index"| BM25
+    API -->|"Log"| Logger
+    RAG -->|"Log"| Logger
+
+    style User fill:#dbeafe,stroke:#3b82f6,color:#1e3a8a
+    style API fill:#ede9fe,stroke:#7c3aed,color:#1e1b4b
+    style Auth fill:#fce7f3,stroke:#db2777,color:#831843
+    style RAG fill:#d1fae5,stroke:#059669,color:#064e3b
+    style Cache fill:#fef9c3,stroke:#ca8a04,color:#713f12
+    style VectorDB fill:#e0f2fe,stroke:#0284c7,color:#0c4a6e
+    style BM25 fill:#f0fdf4,stroke:#16a34a,color:#14532d
+    style LLM fill:#fdf4ff,stroke:#a21caf,color:#4a044e
+    style TextProcessor fill:#fff7ed,stroke:#ea580c,color:#7c2d12
+    style NCERTDocs fill:#fef2f2,stroke:#dc2626,color:#7f1d1d
+    style Logger fill:#f8fafc,stroke:#64748b,color:#1e293b
 ```
 
 ---

@@ -11,20 +11,13 @@ langchain-core==0.3.*
 
 # ── LLM providers ────────────────────────────────────────────
 langchain-groq>=0.1.0              # active: Groq llama-3.3-70b-versatile
-langchain-openai==0.2.*            # optional: text-embedding-3-small
-langchain-anthropic==0.2.*         # optional: claude-haiku-4-5 / sonnet-4-7
 
 # ── LLM API clients ──────────────────────────────────────────
 groq>=0.9.0
-openai>=1.50                       # needed by langchain-openai
-anthropic>=0.39                    # needed by langchain-anthropic
 
 # ── Embeddings ────────────────────────────────────────────────
 langchain-huggingface>=0.1.0       # active: HuggingFaceEmbeddings wrapper
 sentence-transformers>=2.7.0       # active: bge-small-en-v1.5 model
-
-# ── Tokeniser ─────────────────────────────────────────────────
-tiktoken                           # BPE token counting (OpenAI GPT-2 vocab)
 
 # ── Vector store ──────────────────────────────────────────────
 chromadb==0.5.*                    # pin to 0.5.* — persistence format changed at 0.4 and 0.5
@@ -38,15 +31,9 @@ numpy>=1.24.0
 
 # ── PDF loading ───────────────────────────────────────────────
 pymupdf>=1.23.0                    # active: PyMuPDFLoader (Stage 1)
-# opendataloader-pdf               # optional: structure-aware loader (Stretch / Hot Ext C)
-# langchain-opendataloader-pdf     # optional: LangChain integration for above
 
 # ── Eval & data ───────────────────────────────────────────────
 pandas                             # CSV read/write for eval_scored.csv
-# ragas                            # optional: Stretch RAGAS faithfulness eval
-
-# ── Reranker (Stretch track) ──────────────────────────────────
-# cohere                           # Stretch: rerank-3 (free trial credits)
 
 # ── Utilities ─────────────────────────────────────────────────
 python-dotenv>=1.0.0               # .env loading

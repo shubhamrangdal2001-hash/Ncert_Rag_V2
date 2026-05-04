@@ -215,6 +215,57 @@ Student query
 
 ---
 
+## System Architecture Diagram
+
+```mermaid
+%%{
+  config:
+    layout: elk
+}%%
+graph TB
+    User[User Interface]:::sky
+    API[REST API Layer]:::indigo
+    RAG[RAG Engine]:::violet
+    LLM[LLM Service]:::fuchsia
+    VectorDB[Vector Database]:::cyan
+    TextProcessor[Text Processor]:::teal
+    NCERTDocs[NCERT Documents]:::orange
+    Cache[Cache Layer]:::yellow
+    Auth[Authentication]:::rose
+    Logger[Logging Service]:::lime
+    
+    User -->|Query| API
+    API -->|Authenticate| Auth
+    Auth -->|Token Valid| API
+    API -->|Process Query| RAG
+    RAG -->|Check Cache| Cache
+    Cache -->|Hit/Miss| RAG
+    RAG -->|Embed & Retrieve| VectorDB
+    VectorDB -->|Relevant Docs| RAG
+    RAG -->|Context + Query| LLM
+    LLM -->|Generated Response| RAG
+    RAG -->|Store Cache| Cache
+    RAG -->|Response| API
+    API -->|Result| User
+    NCERTDocs -->|Ingest| TextProcessor
+    TextProcessor -->|Processed Text| VectorDB
+    API -->|Log Events| Logger
+    RAG -->|Log Events| Logger
+    
+    classDef sky stroke:#38bdf8,fill:#f0f9ff,color:#1e1b4b
+    classDef indigo stroke:#818cf8,fill:#eef2ff,color:#1e1b4b
+    classDef violet stroke:#a78bfa,fill:#f5f3ff,color:#1e1b4b
+    classDef fuchsia stroke:#e879f9,fill:#fdf4ff,color:#1e1b4b
+    classDef cyan stroke:#22d3ee,fill:#ecfeff,color:#1e1b4b
+    classDef teal stroke:#2dd4bf,fill:#f0fdfa,color:#1e1b4b
+    classDef orange stroke:#fb923c,fill:#fff7ed,color:#1e1b4b
+    classDef yellow stroke:#facc15,fill:#fefce8,color:#1e1b4b
+    classDef rose stroke:#fb7185,fill:#fff1f2,color:#1e1b4b
+    classDef lime stroke:#a3e635,fill:#f7fee7,color:#1e1b4b
+```
+
+---
+
 ## Stage Overview
 
 | Stage | File | What it does | Outputs |

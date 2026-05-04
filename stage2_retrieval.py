@@ -39,10 +39,7 @@ def sec(t):     print(f"\n  {'─'*(W-2)}\n  {t}")
 
 
 # ══════════════════════════════════════════════════════════════
-# EMBEDDING  — TF-IDF local embedder
-# Production upgrade: replace with OpenAI text-embedding-3-small
-#   from langchain_openai import OpenAIEmbeddings
-#   embedder = OpenAIEmbeddings(model="text-embedding-3-small", api_key=KEY)
+# EMBEDDING  — Neural Embedder (HuggingFace)
 # ══════════════════════════════════════════════════════════════
 
 class NeuralEmbedder:

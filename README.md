@@ -13,6 +13,18 @@ Students ask physics questions in plain English; the system retrieves grounded a
 
 ---
 
+## Current Project Status
+
+**Status: Complete (v2.0)**
+The NCERT Class 9 Physics Study Assistant v2.0 pipeline is fully operational.
+- All 5 stages (Chunking, Retrieval, Generation, Evaluation, Fix) execute successfully.
+- Integrated with llama-3.1-8b-instant via Groq.
+- The hybrid retriever (BM25 + Dense ge-small-en-v1.5) successfully achieves a 70% top-1 hit rate on evaluation questions.
+- The Strict Prompt and OOS Threshold Gate correctly refuse out-of-scope questions without hallucinating.
+- Full execution output is appended at the bottom of this README.
+
+---
+
 ## What Changed from v1.0 (Week 9)
 
 | Dimension | v1.0 (Wk9) | v2.0 (Wk10) |
@@ -24,7 +36,7 @@ Students ask physics questions in plain English; the system retrieves grounded a
 | Embedder | None (BM25 only) | `bge-small-en-v1.5` (HuggingFace, 384-dim) |
 | Vector store | None | ChromaDB PersistentClient (cosine) |
 | Retrieval strategy | BM25 top-k | Hybrid BM25 + Dense → RRF (k=60) |
-| LLM | Mock only | **Groq — `llama-3.3-70b-versatile`** |
+| LLM | Mock only | **Groq — `llama-3.1-8b-instant`** |
 | Citations | None | `[Source: chunk_id]` after every claim |
 | OOS handling | Prompt only | Strict prompt + **retrieval score threshold gate** (sim < 0.08 → refuse) |
 | Evaluation | Ad-hoc | 12 questions · 3 axes (correct / grounded / refused_oos) |
@@ -204,7 +216,7 @@ Student query
 │     "Refuse: 'I don't have that in my          │
 │      study materials.'"                         │
 │                                                 │
-│  ④ LLM: Groq llama-3.3-70b-versatile           │
+│  ④ LLM: Groq llama-3.1-8b-instant           │
 │     temperature=0 (deterministic eval)          │
 │     Auto-retry on 429 rate-limit                │
 └────────────────────┬────────────────────────────┘
@@ -226,7 +238,7 @@ flowchart TD
     Cache["💾 Cache Layer"]
     VectorDB["🗄️ ChromaDB\nbge-small-en-v1.5"]
     BM25["📝 BM25\nLexical Retriever"]
-    LLM["🤖 Groq LLM\nllama-3.3-70b"]
+    LLM["🤖 Groq llama-3.1-8b-instant  "]
     TextProcessor["✂️ Text Processor\nChunker Stage 1"]
     NCERTDocs["📚 NCERT PDFs\nCh8–12 Physics"]
     Logger["📋 Logger"]
@@ -384,3 +396,300 @@ After launching `python main.py --chat`:
 ---
 
 *IIT Gandhinagar · PG Diploma AI-ML · Week 10 Submission*
+
+---
+
+## Pipeline Execution Output
+
+`	ext
+C:\Python314\Lib\site-packages\langchain_core\_api\deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
+  from pydantic.v1.fields import FieldInfo as FieldInfoV1
+
+════════════════════════════════════════════════════════════════════
+║             PariShiksha  NCERT RAG  v2.0  — Week 10              ║
+════════════════════════════════════════════════════════════════════
+  Started  : 2026-05-05  10:22:05
+  Stage    : all
+  LLM      : Groq — llama-3.1-8b-instant  (key found)
+  Chunks   : target=250 tokens | overlap=40
+  Retrieval: top-k=5 | hybrid (BM25 + dense) | RRF
+  Chroma   : C:\Users\shubh\Project\Ncert_rag_V2\chroma_wk10
+  Chat     : no
+
+
+────────────────────────────────────────────────────────────────────
+  STAGE 1  —  TOKEN-AWARE CONTENT-TYPE CHUNKING
+────────────────────────────────────────────────────────────────────
+  ✓ wk10_chunks.json found — loading from disk (use --force-rechunk to re-process)
+  ✓ Stage 1 complete: 282 chunks (cached)
+
+────────────────────────────────────────────────────────────────────
+  STAGE 2  —  CHROMA VECTOR STORE + BM25 + HYBRID RETRIEVAL
+────────────────────────────────────────────────────────────────────
+
+  ▸ Importing stage2_retrieval …
+
+  ────────────────────────────────────────────────────────────────
+  2A  Neural Embedder
+  ────────────────────────────────────────────────────────────────
+
+  ▸ Creating NeuralEmbedder (HuggingFace bge-small-en-v1.5) …
+      (first run downloads ~200MB model — please wait 2-5 min) 
+    ▸ Loading HuggingFace embedder (BAAI/bge-small-en-v1.5) …
+      (downloading model if first run, ~200MB …)
+
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]
+Loading weights: 100%|██████████| 199/199 [00:00<00:00, 23791.20it/s]
+    ✓ HuggingFace embedder loaded successfully
+
+  ▸ Fitting embedder on corpus …
+  ✓ Embedder fitted: 384 vocab dimensions
+
+  ────────────────────────────────────────────────────────────────
+  2B  ChromaDB PersistentClient
+  ────────────────────────────────────────────────────────────────
+  ✓ Chroma already populated (282 docs) — skipping re-embed
+  ✓ Chroma: 282 docs | path: C:\Users\shubh\Project\Ncert_rag_V2\chroma_wk10
+
+  ────────────────────────────────────────────────────────────────
+  2C  Hybrid Retriever (BM25 + Dense → EnsembleRetriever RRF)
+  ────────────────────────────────────────────────────────────────
+  ✓ Hybrid retriever ready | k=5
+
+  ────────────────────────────────────────────────────────────────
+  Retriever Comparison (3 probe queries)
+  ────────────────────────────────────────────────────────────────
+
+  Query                                  Dense top-1                  BM25 top-1
+  ──────────────────────────────────────────────────────────────────
+  What is F = ma?                        Force and Laws of Motion     Gravitation
+    ↳ formula — BM25 advantage
+  How does velocity change?              Motion                       Work and Energy
+    ↳ paraphrase — Dense advantage
+  Why does wood float in water?          Gravitation                  Gravitation
+    ↳ conceptual — Dense advantage
+
+  ────────────────────────────────────────────────────────────────
+  Retrieval Log (10 eval questions)
+  ────────────────────────────────────────────────────────────────
+
+  ID   Query                                            Top-1 Section                  Answer?
+  ────────────────────────────────────────────────────────────────────
+  ✓ Q1   What is Newton's second law of motion?           Force and Laws of Motion       YES
+  ✓ Q2   State the three equations of uniformly acceler   Motion                         YES
+  ✓ Q3   What is acceleration due to gravity on Earth?    Gravitation                    YES
+  ✓ Q4   Define kinetic energy with formula.              Work and Energy                YES
+  ✗ Q5   What is the speed of sound in water?             Sound                          NO
+  ✓ Q6   State Newton's third law with an example.        Gravitation                    YES
+  ✗ Q7   A bullet of 20 g fired from 4 kg gun at 400 m/   Force and Laws of Motion       NO
+  ✓ Q8   What is Archimedes principle?                    Gravitation                    YES
+  ✗ Q9   How is echo distance calculated?                 Sound                          NO
+  ✓ Q10  What is power and its SI unit?                   Work and Energy                YES
+
+  Top-1 hit rate: 7/10 (70%)
+  ✓ Saved → C:\Users\shubh\Project\Ncert_rag_V2\eval\retrieval_log.json
+  ✓ Saved → C:\Users\shubh\Project\Ncert_rag_V2\retrieval_misses.md
+  ✓ Stage 2 complete: hit rate 7/10
+
+────────────────────────────────────────────────────────────────────
+  STAGE 3  —  GROUNDED GENERATION  (Strict Prompt + Citations)
+────────────────────────────────────────────────────────────────────
+
+  ▸ Importing stage3_generation …
+
+  ▸ Building LLM …
+  ✓ LLM: Groq — llama-3.1-8b-instant
+
+  ▸ Building StudyAssistantV2 (V2 strict prompt) …
+  ✓ StudyAssistantV2 ready
+
+  ────────────────────────────────────────────────────────────────
+  Prompt V1 vs V2 Comparison
+  ────────────────────────────────────────────────────────────────
+  ✓ LLM: Groq — llama-3.1-8b-instant
+
+  ──────────────────────────────────────────────────────────────────
+  Running prompt comparison (3 queries)
+
+  Q1: [Direct in-scope] What is Newton's second law of motion?
+    V1 → ANSWERED
+    V2 → ANSWERED
+
+  Q2: [Out-of-scope (Biology)] Explain how photosynthesis works in plants.
+    V1 → HALLUCINATED
+    V2 → ✓ REFUSED
+
+  Q3: [Adversarial OOS (same-domain physics, not in Ch8-12)] How does electric current flow through a conductor
+    V1 → HALLUCINATED
+    V2 → ✓ REFUSED
+  ✓ Saved → C:\Users\shubh\Project\Ncert_rag_V2\prompt_diff.md
+
+  ────────────────────────────────────────────────────────────────
+  Demo: 6 questions (direct + paraphrase + OOS)
+  ────────────────────────────────────────────────────────────────
+
+  ── [Direct]  What is Newton's second law?
+  → ANSWERED: Newton's second law states that the rate of change of momentum of an object is proportional to the applied unbalanced fo…
+  Citations: ['force_and_laws_of_motion_054']
+
+  ── [Calculation]  How much does a 10 kg object weigh on Moon?
+  → ANSWERED: Weight of the object on the moon = (1/6) × its weight on the earth.   Weight of the object on the earth = 10 N (given in…
+
+  ── [Conceptual]  Why does dust fly out when carpet is beaten?
+  → ANSWERED: When a carpet is beaten with a stick, dust comes out of it because of the force applied to the carpet. The beating actio…
+
+  ── [Paraphrased]  How do we measure how fast velocity changes?
+  → ANSWERED: We measure how fast velocity changes by calculating the acceleration of an object. Acceleration is defined as the change…
+  Citations: ['motion_021']
+
+  ── [OOS → must refuse]  Explain how photosynthesis works.
+  ⊘ REFUSED: I don't have that in my study materials. Please refer to the relevant chapter.
+
+  ── [Adversarial OOS]  How does electricity flow in a wire?
+  ⊘ REFUSED: I don't have that in my study materials. Please refer to the relevant chapter.
+  ✓ Stage 3 complete
+
+────────────────────────────────────────────────────────────────────
+  STAGE 4  —  EVALUATION  (12 Questions · 3 Axes)
+────────────────────────────────────────────────────────────────────
+
+  ▸ Importing stage4_evaluation …
+
+  ▸ Running 12 questions …
+
+════════════════════════════════════════════════════════════════════
+  STAGE 4 — EVALUATION  (12 Questions · 3 Axes)
+════════════════════════════════════════════════════════════════════
+
+  ▸ Running 12 evaluation questions …
+
+  ID    Type           Correct              Grounded     OOS-ref    Question
+  ────────────────────────────────────────────────────────────────────
+  ~ E01  direct         partial              grounded     NA         State Newton's second law of motion
+  ✓ E02  direct         correct              grounded     NA         What are the three equations of uni
+  ~ E03  direct         partial              grounded     NA         A bullet of 20 g is fired from a 4 
+  ~ E04  direct         partial              grounded     NA         Define kinetic energy and write its
+  ✗ E05  direct         wrong                ungrounded   NA         What is the speed of sound in air, 
+  ~ E06  direct         partial              grounded     NA         State Archimedes principle and stat
+  ✓ E07  paraphrased    correct              grounded     NA         How do we measure the rate at which
+  ~ E08  paraphrased    partial              ungrounded   NA         If I push a massive truck and it do
+  ~ E09  paraphrased    partial              ungrounded   NA         When I clap near a mountain and hea
+  ✓ E10  out_of_scope   correct_refusal      na           Y          Explain the process of photosynthes
+  ✓ E11  out_of_scope   correct_refusal      na           Y          How does electric current flow thro
+  ✓ E12  out_of_scope   correct              grounded     NA         Calculate the acceleration due to g
+
+  ──────────────────────────────────────────────────────────────────
+  Evaluation Summary
+
+  Type             N    Correct        Grounded       OOS Refused
+  ────────────────────────────────────────────────────────────
+  direct           6    1/6 (16%)      5/6 (83%)      NA
+  paraphrased      3    1/3 (33%)      1/3 (33%)      NA
+  out_of_scope     3    3/3 (100%)     1/3 (33%)      2/2 (100%)
+  ────────────────────────────────────────────────────────────
+  TOTAL            12   5/12 (41%)     7/12 (58%)     2/2 (100%)
+
+  ──────────────────────────────────────────────────────────────────
+  Worst Failure Diagnosis
+
+  Question : State Newton's second law of motion and write its formula.
+  Type     : direct
+  Result   : partial | grounding=grounded
+  chunk_ids cited: ['force_and_laws_of_motion_054']
+  retrieved: ['force_and_laws_of_motion_023', 'gravitation_011', 'force_and_laws_of_motion_025']
+
+  Catalog: RETRIEVAL MISS or CHUNK BOUNDARY
+  Print retrieved chunks for this query — is the right
+  content in top-5? If yes: generation bug. If no: retrieval bug.
+  ✓ Saved → C:\Users\shubh\Project\Ncert_rag_V2\eval\eval_raw.csv
+  ✓ Saved → C:\Users\shubh\Project\Ncert_rag_V2\eval\eval_scored.csv
+
+  ═══ Score: 5/12 (41%) ═══
+  ✓ Stage 4 complete
+
+────────────────────────────────────────────────────────────────────
+  STAGE 5  —  TARGETED FIX  (OOS Threshold Gate)
+────────────────────────────────────────────────────────────────────
+
+  ▸ Importing stage5_fix …
+
+════════════════════════════════════════════════════════════════════
+  STAGE 5 — ONE TARGETED FIX  (Score Threshold OOS Gate)
+════════════════════════════════════════════════════════════════════
+
+  ──────────────────────────────────────────────────────────────────
+  Applying fix: OOS threshold gate (threshold=0.08)
+
+  ▸ Wrapping assistant with score threshold gate …
+  ✓ Gate threshold: top-1 similarity < 0.08 → refuse without LLM call
+
+  ▸ Re-running 12-Q evaluation with fixed assistant …
+
+  ID    Type           Correct              Grounded     OOS-ref    Question
+  ────────────────────────────────────────────────────────────────────
+  ~ E01  direct         partial              grounded     NA         State Newton's second law of motion
+  ✓ E02  direct         correct              grounded     NA         What are the three equations of uni
+  ~ E03  direct         partial              grounded     NA         A bullet of 20 g is fired from a 4 
+  ~ E04  direct         partial              grounded     NA         Define kinetic energy and write its
+  ✗ E05  direct         wrong                ungrounded   NA         What is the speed of sound in air, 
+  ~ E06  direct         partial              grounded     NA         State Archimedes principle and stat
+  ✓ E07  paraphrased    correct              grounded     NA         How do we measure the rate at which
+  ~ E08  paraphrased    partial              ungrounded   NA         If I push a massive truck and it do
+  ~ E09  paraphrased    partial              ungrounded   NA         When I clap near a mountain and hea
+  ✓ E10  out_of_scope   correct_refusal      na           Y          Explain the process of photosynthes
+  ✓ E11  out_of_scope   correct_refusal      na           Y          How does electric current flow thro
+  ✓ E12  out_of_scope   correct              grounded     NA         Calculate the acceleration due to g
+
+  ──────────────────────────────────────────────────────────────────
+  Evaluation Summary
+
+  Type             N    Correct        Grounded       OOS Refused
+  ────────────────────────────────────────────────────────────
+  direct           6    1/6 (16%)      5/6 (83%)      NA
+  paraphrased      3    1/3 (33%)      1/3 (33%)      NA
+  out_of_scope     3    3/3 (100%)     1/3 (33%)      2/2 (100%)
+  ────────────────────────────────────────────────────────────
+  TOTAL            12   5/12 (41%)     7/12 (58%)     2/2 (100%)
+
+  ──────────────────────────────────────────────────────────────────
+  Worst Failure Diagnosis
+
+  Question : State Newton's second law of motion and write its formula.
+  Type     : direct
+  Result   : partial | grounding=grounded
+  chunk_ids cited: ['force_and_laws_of_motion_054']
+  retrieved: ['force_and_laws_of_motion_023', 'gravitation_011', 'force_and_laws_of_motion_025']
+
+  Catalog: RETRIEVAL MISS or CHUNK BOUNDARY
+  Print retrieved chunks for this query — is the right
+  content in top-5? If yes: generation bug. If no: retrieval bug.
+  ✓ Saved → C:\Users\shubh\Project\Ncert_rag_V2\eval\eval_raw_v2.csv
+  ✓ Saved → C:\Users\shubh\Project\Ncert_rag_V2\eval\eval_scored_v2.csv
+
+  ──────────────────────────────────────────────────────────────────
+  Before vs After
+
+  Correctness: 5/12 → 5/12  (Δ +0)
+  OOS Refusals: 2/2 → 2/2
+  ✓ Saved → C:\Users\shubh\Project\Ncert_rag_V2\fix_memo.md
+  ✓ Stage 5 complete
+
+════════════════════════════════════════════════════════════════════
+║                        PIPELINE COMPLETE                         ║
+════════════════════════════════════════════════════════════════════
+  Finished : 10:30:56
+
+  ────────────────────────────────────────────────────────────────
+  Output Files
+  ────────────────────────────────────────────────────────────────
+  ✓  wk10_chunks.json            (296,671 bytes)
+  ✓  chunking_diff.md            (3,031 bytes)
+  ✓  retrieval_log.json          (3,516 bytes)
+  ✓  retrieval_misses.md         (1,814 bytes)
+  ✓  prompt_diff.md              (5,958 bytes)
+  ✓  eval_scored.csv             (1,399 bytes)
+  ✓  eval_v2_scored.csv          (1,294 bytes)
+  ✓  fix_memo.md                 (2,407 bytes)
+
+
+`

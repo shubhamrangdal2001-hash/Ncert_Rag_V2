@@ -18,8 +18,8 @@ Students ask physics questions in plain English; the system retrieves grounded a
 **Status: Complete (v2.0)**
 The NCERT Class 9 Physics Study Assistant v2.0 pipeline is fully operational.
 - All 5 stages (Chunking, Retrieval, Generation, Evaluation, Fix) execute successfully.
-- Integrated with llama-3.1-8b-instant via Groq.
-- The hybrid retriever (BM25 + Dense ge-small-en-v1.5) successfully achieves a 70% top-1 hit rate on evaluation questions.
+- Integrated with `llama-3.1-8b-instant` via Groq.
+- The hybrid retriever (BM25 + Dense `bge-small-en-v1.5`) successfully achieves a 70% top-1 hit rate on evaluation questions.
 - The Strict Prompt and OOS Threshold Gate correctly refuse out-of-scope questions without hallucinating.
 - Full execution output is appended at the bottom of this README.
 
@@ -36,7 +36,7 @@ The NCERT Class 9 Physics Study Assistant v2.0 pipeline is fully operational.
 | Embedder | None (BM25 only) | `bge-small-en-v1.5` (HuggingFace, 384-dim) |
 | Vector store | None | ChromaDB PersistentClient (cosine) |
 | Retrieval strategy | BM25 top-k | Hybrid BM25 + Dense → RRF (k=60) |
-| LLM | Mock only | **Groq — `llama-3.1-8b-instant`** |
+| LLM | Mock only | **Groq — `llama-3.3-70b-versatile`** |
 | Citations | None | `[Source: chunk_id]` after every claim |
 | OOS handling | Prompt only | Strict prompt + **retrieval score threshold gate** (sim < 0.08 → refuse) |
 | Evaluation | Ad-hoc | 12 questions · 3 axes (correct / grounded / refused_oos) |
@@ -216,7 +216,7 @@ Student query
 │     "Refuse: 'I don't have that in my          │
 │      study materials.'"                         │
 │                                                 │
-│  ④ LLM: Groq llama-3.1-8b-instant           │
+│  ④ LLM: Groq llama-3.3-70b-versatile           │
 │     temperature=0 (deterministic eval)          │
 │     Auto-retry on 429 rate-limit                │
 └────────────────────┬────────────────────────────┘
@@ -238,7 +238,7 @@ flowchart TD
     Cache["💾 Cache Layer"]
     VectorDB["🗄️ ChromaDB\nbge-small-en-v1.5"]
     BM25["📝 BM25\nLexical Retriever"]
-    LLM["🤖 Groq llama-3.1-8b-instant  "]
+    LLM["🤖 Groq LLM\nllama-3.3-70b"]
     TextProcessor["✂️ Text Processor\nChunker Stage 1"]
     NCERTDocs["📚 NCERT PDFs\nCh8–12 Physics"]
     Logger["📋 Logger"]
@@ -397,14 +397,9 @@ After launching `python main.py --chat`:
 
 *IIT Gandhinagar · PG Diploma AI-ML · Week 10 Submission*
 
----
-
 ## Pipeline Execution Output
 
-`	ext
-C:\Python314\Lib\site-packages\langchain_core\_api\deprecation.py:25: UserWarning: Core Pydantic V1 functionality isn't compatible with Python 3.14 or greater.
-  from pydantic.v1.fields import FieldInfo as FieldInfoV1
-
+```text
 ════════════════════════════════════════════════════════════════════
 ║             PariShiksha  NCERT RAG  v2.0  — Week 10              ║
 ════════════════════════════════════════════════════════════════════
@@ -690,6 +685,4 @@ Loading weights: 100%|██████████| 199/199 [00:00<00:00, 2379
   ✓  eval_scored.csv             (1,399 bytes)
   ✓  eval_v2_scored.csv          (1,294 bytes)
   ✓  fix_memo.md                 (2,407 bytes)
-
-
-`
+```

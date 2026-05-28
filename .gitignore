@@ -1,6 +1,7 @@
 # Secrets — never commit
 .env
 *.key
+.streamlit/secrets.toml
 
 # Python cache
 __pycache__/

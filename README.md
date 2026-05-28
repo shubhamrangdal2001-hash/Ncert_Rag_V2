@@ -147,6 +147,38 @@ Get a free key at: https://console.groq.com/keys
 
 ---
 
+## Streamlit Web App
+
+Run the interactive Streamlit app locally:
+
+```bash
+# Set up environment
+set GROQ_API_KEY=your_groq_api_key_here
+
+# Run the app
+streamlit run streamlit_app.py
+```
+
+The app will open at `http://localhost:8501`
+
+### Configure & Deploy to Streamlit Cloud
+
+1. **Local secrets** (for development): Create `.streamlit/secrets.toml`
+   ```toml
+   GROQ_API_KEY = "your-groq-api-key"
+   ```
+   > This file is gitignored — never committed
+
+2. **Streamlit Cloud secrets** (for production):
+   - Go to https://share.streamlit.io → your app settings → Secrets
+   - Add the same TOML format
+   - Redeploy
+
+3. **Python runtime**: 
+   - `runtime.txt` pins Python 3.11 to avoid `tokenizers`/PyO3 build issues
+
+---
+
 ## Dependencies
 
 ```

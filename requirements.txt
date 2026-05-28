@@ -1,46 +1,43 @@
-# ──────────────
-───────────────────────────────────────────────
-# requirements.txt — NCERT RAG v2.0 (Week 10)
-# Cohort-pinned versions — match these exactly to avoid Tuesday
-# morning support tickets. Do not upgrade without team sign-off.
-# ─────────────────────────────────────────────────────────────
+# requirements.txt - NCERT RAG v2.0 (Week 10)
+# Cohort-pinned versions - match these exactly to avoid issues
+# Do not upgrade without team sign-off.
 
-# ── LangChain core (cohort-pinned) ───────────────────────────
+# LangChain core (cohort-pinned)
 langchain==0.3.*
 langchain-community==0.3.*
 langchain-core==0.3.*
 
-# ── LLM providers ────────────────────────────────────────────
-langchain-groq>=0.1.0              # active: Groq llama-3.1-8b-instant
+# LLM providers
+langchain-groq>=0.1.0
 
-# ── LLM API clients ──────────────────────────────────────────
+# LLM API clients
 groq>=0.9.0
 
-# ── Embeddings ────────────────────────────────────────────────
-langchain-huggingface>=0.1.0       # active: HuggingFaceEmbeddings wrapper
-sentence-transformers>=2.7.0       # active: bge-small-en-v1.5 model
+# Embeddings
+langchain-huggingface>=0.1.0
+sentence-transformers>=2.7.0
 
-# ── Vector store ──────────────────────────────────────────────
-chromadb==0.5.*                    # pin to 0.5.* — persistence format changed at 0.4 and 0.5
+# Vector store
+chromadb==0.5.*
 
-# ── Lexical retrieval ─────────────────────────────────────────
+# Lexical retrieval
 rank_bm25>=0.2.2
 
-# ── Retrieval scoring / ML utils ─────────────────────────────
-scikit-learn>=1.0.0                # cosine_similarity, LogisticRegression (threshold calibration)
+# Retrieval scoring / ML utils
+scikit-learn>=1.0.0
 numpy>=1.24.0
 
-# ── PDF loading ───────────────────────────────────────────────
-pymupdf>=1.23.0                    # active: PyMuPDFLoader (Stage 1)
+# PDF loading
+pymupdf>=1.23.0
 
-# ── Eval & data ───────────────────────────────────────────────
-pandas                             # CSV read/write for eval_scored.csv
+# Eval & data
+pandas
 
-# ── Utilities ─────────────────────────────────────────────────
-python-dotenv>=1.0.0               # .env loading
+# Utilities
+python-dotenv>=1.0.0
 
-# ── Ragas Evaluation ──────────────────────────────────────────
-ragas>=0.1.0                       # Ragas evaluation framework
-datasets>=2.16.0                   # Hugging Face datasets (required by ragas)
-fastapi>=0.115.0                   # API server for frontend
-uvicorn>=0.30.0                    # ASGI server runtime
+# Ragas Evaluation
+ragas>=0.1.0
+datasets>=2.16.0
+fastapi>=0.115.0
+uvicorn>=0.30.0

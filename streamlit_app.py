@@ -47,6 +47,9 @@ if "chat_history" not in st.session_state:
 @st.cache_resource
 def initialize_assistant(agentic: bool, k: int, api_key: str) -> any:
     """Initialize and cache the RAG assistant"""
+    if not api_key:
+        return None
+        
     try:
         chunks = load_chunks_from_disk()
         retriever = rebuild_retriever(chunks, k=k)
@@ -77,17 +80,20 @@ def main():
                           help="Number of chunks to retrieve for context")
     
     api_key = st.sidebar.text_input(
-        "Groq API Key (optional)",
+        "Groq API Key (required)",
         type="password",
-        placeholder="Enter your Groq API key or use GROQ_API_KEY env var",
-        help="Leave blank to use GROQ_API_KEY environment variable"
+        placeholder="Enter your Groq API key",
+        help="Get a free key at https://console.groq.com/keys"
     )
     
+    # Check for env var as fallback
     if not api_key:
         api_key = os.environ.get("GROQ_API_KEY", "")
     
+    # Require API key before initializing
     if not api_key:
-        st.sidebar.warning("⚠️ No API key found. Provide one above or set GROQ_API_KEY.")
+        st.warning("⚠️ **API Key Required**\n\nPlease enter your Groq API key in the sidebar to continue.\n\nGet a free key at: https://console.groq.com/keys")
+        return
     
     # Initialize assistant
     assistant = initialize_assistant(agentic, k, api_key)

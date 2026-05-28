@@ -2,6 +2,9 @@
 # Cohort-pinned versions - match these exactly to avoid issues
 # Do not upgrade without team sign-off.
 
+# Streamlit (for deployment)
+streamlit>=1.28.0
+
 # LangChain core (cohort-pinned)
 langchain==0.3.*
 langchain-community==0.3.*

@@ -9,17 +9,17 @@
 | Overlap | 50 words | 40 tokens |
 | Content-type metadata | None | prose / worked_example / question_or_exercise / table |
 | Section-boundary splits | No | Yes (flush on heading change) |
-| Total chunks | ~15–20 | 64 |
-| Token range | Uncontrolled | 52–3220 tokens |
-| Avg tokens/chunk | ~300 words × 1.3 ≈ 390 | 777 |
+| Total chunks | ~15–20 | 282 |
+| Token range | Uncontrolled | 16–316 tokens |
+| Avg tokens/chunk | ~300 words × 1.3 ≈ 390 | 196 |
 
 ## Content Type Distribution (Wk10)
 
 | Type | Count | % |
 |------|-------|---|
-| prose | 46 | 72% |
-| question_or_exercise | 4 | 6% |
-| worked_example | 14 | 22% |
+| prose | 238 | 84% |
+| question_or_exercise | 5 | 2% |
+| worked_example | 39 | 14% |
 
 
 ## Key Difference 1 — Token vs Word Sizing
@@ -46,18 +46,22 @@ in one chunk.
 ### Example chunk that would have been split in Wk9:
 
 ```
-ID: motion_003
+ID: motion_012
 Type: worked_example
-Tokens: 2766
+Tokens: 122
 Section: Motion
 Text (first 300 chars):
-m object B in m 9:30 am 10 12 9:45 am 20 19 10:00 am 30 23 10:15 am 40 35 10:30 am 50 37 10:45 am 60 41 11:00 am 70 44 8.2 Measuring the Rate of Motion 2020-21
+Sometimes it might have travelled faster and sometimes slower than this.
 
-MOTION
-101
-Look at the situations given in Fig. 8.2. If
-the bowling speed is 143 km h–1 in Fig. 8.2(a)
-what does it mean? What do you under...
+Example 8.1 An object travels 16 m in 4 s
+and then another 16 m in 2 s. What is
+the average speed of the object?
+
+Solution:
+Total distance travelled by the object =
+16 m + 16 m = 32 m
+Total time taken = 4 s + 2 s = 6 s
+Average...
 ```
 
 ## Key Difference 3 — Content-Type Metadata for Retrieval

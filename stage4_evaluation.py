@@ -183,7 +183,7 @@ def score_correctness(answer: str, key_terms: List[str],
 
 
 def score_grounding(answer: str, chunk_ids_cited: List[str],
-                    retrieved_docs: List[Dict], is_refusal: bool) -> str:
+                    retrieved_ids: List[str], is_refusal: bool) -> str:
     """
     Axis (b): grounded / ungrounded / na
     grounded = citation present AND cited chunk text contains the claim.
@@ -194,7 +194,6 @@ def score_grounding(answer: str, chunk_ids_cited: List[str],
         return "ungrounded"  # no citations at all
 
     # Check that cited chunk ids are in retrieved docs
-    retrieved_ids = [d.get("id","") for d in retrieved_docs]
     valid_citations = [cid for cid in chunk_ids_cited if cid in retrieved_ids]
 
     if valid_citations:
@@ -225,7 +224,7 @@ def run_evaluation(assistant) -> List[Dict]:
         correctness  = score_correctness(r["answer"], eq["key_terms"],
                                          r["is_refusal"], eq["expected"])
         grounding    = score_grounding(r["answer"], r["chunk_ids"],
-                                       r.get("retrieved_docs", r.get("sources",[])),
+                                       r.get("retrieved_ids", []),
                                        r["is_refusal"])
         refused_oos  = score_refused_oos(r["is_refusal"], eq["expected"])
 
@@ -392,14 +391,12 @@ if __name__ == "__main__":
     chunks = json.load(open(chunks_path, encoding="utf-8"))
 
     emb = NeuralEmbedder()
-    texts = [c["text"] for c in chunks]
-    emb.fit_and_embed(texts)
 
     store = ChromaStore(str(base / "chroma_wk10"), emb)
     hybrid = HybridRetriever(chunks, store, k=5)
 
     api_key = os.environ.get("GROQ_API_KEY", "")
-    llm = build_llm(api_key, "groq" if api_key else "mock")
+    llm = build_llm(api_key)
     assistant = StudyAssistantV2(hybrid, llm, use_strict_prompt=True)
 
     run(assistant)

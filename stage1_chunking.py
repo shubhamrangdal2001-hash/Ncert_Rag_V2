@@ -139,7 +139,8 @@ def chunk_chapter(chapter_name: str, text: str) -> list:
 
     Returns list of chunk dicts with full metadata.
     """
-    paragraphs = [p.strip() for p in re.split(r'\n\n+', text) if p.strip()]
+    # Split by double newline OR newline preceded by sentence-ending punctuation
+    paragraphs = [p.strip() for p in re.split(r'\n\n+|(?<=[.?!])\s*\n', text) if p.strip()]
 
     chunks       = []
     buffer       = []          # paragraphs accumulating for current chunk
@@ -194,8 +195,8 @@ def chunk_chapter(chapter_name: str, text: str) -> list:
         # ── Worked example: never split ───────────────────────
         if ct == "worked_example":
             # Flush whatever came before
-            if buffer and not in_example:
-                flush("prose")
+            if buffer:
+                flush("worked_example" if in_example else None)
             in_example = True
             buffer.append(para)
             buffer_tokens += para_tokens
@@ -215,7 +216,7 @@ def chunk_chapter(chapter_name: str, text: str) -> list:
                     in_example = False
                 continue
             else:
-                # Example is done
+                # Example is done, or it got too large
                 flush("worked_example")
                 in_example = False
 
@@ -232,9 +233,10 @@ def chunk_chapter(chapter_name: str, text: str) -> list:
         if ct == "question_or_exercise":
             if buffer and detect_content_type('\n'.join(buffer)) != "question_or_exercise":
                 flush()
+            if buffer_tokens + para_tokens > TARGET_TOKENS and buffer:
+                flush("question_or_exercise")
             buffer.append(para)
             buffer_tokens += para_tokens
-            # Don't flush yet—accumulate all exercises
             continue
 
         # ── Prose: accumulate until target size ───────────────

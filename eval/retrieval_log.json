@@ -2,11 +2,11 @@
   {
     "query": "What is Newton's second law of motion?",
     "expected_chapter": "Ch9",
-    "top1_chunk_id": "work_and_energy_004",
-    "top1_section": "Work and Energy",
-    "top1_similarity": 0,
+    "top1_chunk_id": "force_and_laws_of_motion_023",
+    "top1_section": "Force and Laws of Motion",
+    "top1_similarity": 0.8179,
     "top1_content_type": "prose",
-    "answer_present": false,
+    "answer_present": true,
     "answer_keywords": [
       "F = ma",
       "force",
@@ -16,10 +16,10 @@
   {
     "query": "State the three equations of uniformly accelerated motion.",
     "expected_chapter": "Ch8",
-    "top1_chunk_id": "motion_011",
+    "top1_chunk_id": "motion_035",
     "top1_section": "Motion",
-    "top1_similarity": 0.7266,
-    "top1_content_type": "question_or_exercise",
+    "top1_similarity": 0.7382,
+    "top1_content_type": "prose",
     "answer_present": true,
     "answer_keywords": [
       "v = u + at",
@@ -30,10 +30,10 @@
   {
     "query": "What is acceleration due to gravity on Earth?",
     "expected_chapter": "Ch10",
-    "top1_chunk_id": "gravitation_005",
+    "top1_chunk_id": "gravitation_025",
     "top1_section": "Gravitation",
-    "top1_similarity": 0.7613,
-    "top1_content_type": "worked_example",
+    "top1_similarity": 0.803,
+    "top1_content_type": "prose",
     "answer_present": true,
     "answer_keywords": [
       "9.8",
@@ -43,9 +43,9 @@
   {
     "query": "Define kinetic energy with formula.",
     "expected_chapter": "Ch11",
-    "top1_chunk_id": "work_and_energy_006",
+    "top1_chunk_id": "work_and_energy_025",
     "top1_section": "Work and Energy",
-    "top1_similarity": 0.7299,
+    "top1_similarity": 0.775,
     "top1_content_type": "prose",
     "answer_present": true,
     "answer_keywords": [
@@ -57,10 +57,10 @@
   {
     "query": "What is the speed of sound in water?",
     "expected_chapter": "Ch12",
-    "top1_chunk_id": "sound_006",
+    "top1_chunk_id": "sound_048",
     "top1_section": "Sound",
-    "top1_similarity": 0.7188,
-    "top1_content_type": "prose",
+    "top1_similarity": 0.7449,
+    "top1_content_type": "question_or_exercise",
     "answer_present": false,
     "answer_keywords": [
       "1500"
@@ -69,9 +69,9 @@
   {
     "query": "State Newton's third law with an example.",
     "expected_chapter": "Ch9",
-    "top1_chunk_id": "force_and_laws_of_motion_008",
-    "top1_section": "Force and Laws of Motion",
-    "top1_similarity": 0.7508,
+    "top1_chunk_id": "gravitation_010",
+    "top1_section": "Gravitation",
+    "top1_similarity": 0.7452,
     "top1_content_type": "prose",
     "answer_present": true,
     "answer_keywords": [
@@ -83,11 +83,11 @@
   {
     "query": "A bullet of 20 g fired from 4 kg gun at 400 m/s. Find recoil.",
     "expected_chapter": "Ch9",
-    "top1_chunk_id": "force_and_laws_of_motion_012",
+    "top1_chunk_id": "force_and_laws_of_motion_046",
     "top1_section": "Force and Laws of Motion",
-    "top1_similarity": 0.6025,
+    "top1_similarity": 0.781,
     "top1_content_type": "prose",
-    "answer_present": true,
+    "answer_present": false,
     "answer_keywords": [
       "v2 = -2",
       "2 m"
@@ -96,10 +96,10 @@
   {
     "query": "What is Archimedes principle?",
     "expected_chapter": "Ch10",
-    "top1_chunk_id": "gravitation_012",
+    "top1_chunk_id": "gravitation_049",
     "top1_section": "Gravitation",
-    "top1_similarity": 0.5932,
-    "top1_content_type": "question_or_exercise",
+    "top1_similarity": 0.7853,
+    "top1_content_type": "prose",
     "answer_present": true,
     "answer_keywords": [
       "buoyant",
@@ -109,10 +109,10 @@
   {
     "query": "How is echo distance calculated?",
     "expected_chapter": "Ch12",
-    "top1_chunk_id": "sound_013",
+    "top1_chunk_id": "sound_031",
     "top1_section": "Sound",
-    "top1_similarity": 0.6339,
-    "top1_content_type": "question_or_exercise",
+    "top1_similarity": 0.707,
+    "top1_content_type": "prose",
     "answer_present": false,
     "answer_keywords": [
       "d = v",
@@ -122,10 +122,10 @@
   {
     "query": "What is power and its SI unit?",
     "expected_chapter": "Ch11",
-    "top1_chunk_id": "work_and_energy_010",
+    "top1_chunk_id": "work_and_energy_039",
     "top1_section": "Work and Energy",
-    "top1_similarity": 0.7245,
-    "top1_content_type": "question_or_exercise",
+    "top1_similarity": 0.7046,
+    "top1_content_type": "prose",
     "answer_present": true,
     "answer_keywords": [
       "watt",

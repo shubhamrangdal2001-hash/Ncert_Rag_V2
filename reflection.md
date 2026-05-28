@@ -90,9 +90,9 @@ The key improvement from Wk9: 36 worked examples are intact (verified by checkin
 
 ## Q7 — LLM Deviation from Spec — Why Groq instead of Claude?
 
-The spec calls for `claude-haiku-4-5` as the default generation model. This project uses **Groq `llama-3.3-70b-versatile`** for the following reasons:
+The spec calls for `claude-haiku-4-5` as the default generation model. This project uses **Groq `llama-3.1-8b-instant`** for the following reasons:
 
-1. **Anthropic API access**: During the project week, the `claude-haiku-4-5` model endpoint was unavailable on the free tier for this cohort's API keys. Groq provides a free, high-rate-limit API with `llama-3.3-70b-versatile` — a comparable 70B model with strong instruction-following for strict prompts.
+1. **Anthropic API access**: During the project week, the `claude-haiku-4-5` model endpoint was unavailable on the free tier for this cohort's API keys. Groq provides a free, high-rate-limit API with `llama-3.1-8b-instant` — a comparable model with strong instruction-following for strict prompts.
 
 2. **Architectural equivalence**: The LCEL chain in `stage3_generation.py` uses `ChatGroq` as a drop-in replacement for `ChatAnthropic`. The prompt structure (PROMPT_V1 / PROMPT_V2), citation format `[Source: chunk_id]`, and refusal text are identical. Switching to Claude requires only: `from langchain_anthropic import ChatAnthropic` and setting `ANTHROPIC_API_KEY`.
 
@@ -193,6 +193,24 @@ The §4.5 expert hint is direct: *"Stick with PyMuPDF if it didn't break tables.
 | Unstructured.io | Designed for mixed-format corpora (PDF + DOCX + HTML); overkill for pure-PDF NCERT |
 
 **When OpenDataLoader-PDF would be the right call:** If `wk10_chunks.json` showed broken tables (answer column in separate chunk from question column), switching to `format="markdown"` mode would be the smallest fix. The bounding box JSON output (`format="json"`) would also directly enable the teacher's ask for "specific 200 words" source highlighting in a future demo.
+
+---
+
+## Q12 — Repo Discipline Self-Assessment (§4.7)
+
+| Check | Status | Evidence |
+|-------|--------|---------|
+| Same repo as Wk9 | ✅ | `github.com/shubhamrangdal2001-hash/Ncert_Rag_V2` |
+| Tag `v1.0-wk9` before Wk10 work | ✅ | `git tag v1.0-wk9 2324cf4` (first .gitignore commit) |
+| Tag `v2.0-wk10` on final commit | ✅ | Moved to HEAD after all cleanup commits |
+| `.env` excluded | ✅ | `.gitignore` blocks `.env`; never committed |
+| `.env.example` with empty placeholders | ✅ | Committed at `d21be03` |
+| ≥8 meaningful commits | ✅ | **25 commits** across the week |
+| NCERT source link in README | ✅ | `https://ncert.nic.in/textbook.php?iesc1=0-11` at line 158 |
+| PDFs not committed | ✅ | Only `corpus/README.txt` placeholder committed |
+| Feature branches `feat/v2-{day}` | ❌ | **Gap**: all Wk10 work committed directly to `master` |
+
+**Honest note on feature branches:** The spec asks for `feat/v2-chunking`, `feat/v2-embeddings` etc. All Wk10 work was committed directly to `master` with stage-scoped commit messages (`feat(stage1):`, `feat(stage2):` etc.) rather than separate branches. The commit trail is clean and stage-isolated, but the branch structure is missing. Creating retroactive branches now would be dishonest — the commits already exist on `master`. This is a repo hygiene miss I would fix in Wk11 by branching before writing any code.
 
 ---
 

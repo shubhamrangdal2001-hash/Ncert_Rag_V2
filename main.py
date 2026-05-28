@@ -146,9 +146,10 @@ def print_startup_info(args: argparse.Namespace) -> None:
     print(f"  Stage    : {'all' if not args.stage else args.stage}")
     key_present = bool(args.api_key or os.environ.get("GROQ_API_KEY"))
     key_status  = "key found" if key_present else "⚠ GROQ_API_KEY not set!"
-    print(f"  LLM      : Groq — llama-3.3-70b-versatile  ({key_status})")
+    print(f"  LLM      : Groq — llama-3.1-8b-instant  ({key_status})")
     print(f"  Chunks   : target={args.chunk_size} tokens | overlap=40")
     print(f"  Retrieval: top-k={args.k} | hybrid (BM25 + dense) | RRF")
+    print(f"  Agentic  : {'yes' if args.agentic else 'no'}")
     print(f"  Chroma   : {PROJECT_ROOT / 'chroma_wk10'}")
     print(f"  Chat     : {'yes' if args.chat else 'no'}")
     print()
@@ -202,6 +203,8 @@ def parse_args() -> argparse.Namespace:
                    help="Skip 12-Q eval loop (faster dev iteration).")
     p.add_argument("--force-rechunk", action="store_true", dest="force_rechunk",
                    help="Re-run Stage 1 PDF chunking even if wk10_chunks.json exists.")
+    p.add_argument("--agentic", action="store_true",
+                   help="Use AgenticStudyAssistant for planning + iterative retrieval.")
     return p.parse_args()
 
 
@@ -281,8 +284,11 @@ def run_stage2(chunks: List[Dict], k: int = 5):
 
     # Build embedder
     section("2A  Neural Embedder")
+    step("Creating NeuralEmbedder (HuggingFace bge-small-en-v1.5) …")
+    print("      (first run downloads ~200MB model — please wait 2-5 min) ", flush=True)
     emb   = NeuralEmbedder()
     texts = [c["text"] for c in chunks]
+    step("Fitting embedder on corpus …")
     emb.fit_and_embed(texts)
     ok(f"Embedder fitted: {emb._dim} vocab dimensions")
 
@@ -338,7 +344,7 @@ def run_stage2(chunks: List[Dict], k: int = 5):
     return hybrid
 
 
-def run_stage3(retriever, api_key: str = ""):
+def run_stage3(retriever, api_key: str = "", agentic: bool = False):
     """
     Stage 3 — Grounded generation: prompt comparison + demo answers.
     Returns: StudyAssistantV2 instance.
@@ -348,7 +354,12 @@ def run_stage3(retriever, api_key: str = ""):
 
     step("Importing stage3_generation …")
     try:
-        from stage3_generation import StudyAssistantV2, build_llm, run_prompt_diff
+        from stage3_generation import (
+            StudyAssistantV2,
+            AgenticStudyAssistant,
+            build_llm,
+            run_prompt_diff,
+        )
     except ImportError as e:
         fail(f"Cannot import stage3_generation: {e}")
 
@@ -358,8 +369,9 @@ def run_stage3(retriever, api_key: str = ""):
 
     # Build strict assistant
     step("Building StudyAssistantV2 (V2 strict prompt) …")
-    assistant = StudyAssistantV2(retriever, llm, k=5, use_strict_prompt=True)
-    ok("StudyAssistantV2 ready")
+    assistant_cls = AgenticStudyAssistant if agentic else StudyAssistantV2
+    assistant = assistant_cls(retriever, llm, k=5, use_strict_prompt=True)
+    ok(f"{assistant_cls.__name__} ready")
 
     # Prompt diff
     section("Prompt V1 vs V2 Comparison")
@@ -585,8 +597,6 @@ def rebuild_retriever(chunks: List[Dict], k: int = 5):
     from stage2_retrieval import NeuralEmbedder, ChromaStore, HybridRetriever
 
     emb   = NeuralEmbedder()
-    texts = [c["text"] for c in chunks]
-    emb.fit_and_embed(texts)
 
     chroma_path = str(PROJECT_ROOT / "chroma_wk10")
     store = ChromaStore(chroma_path, emb)
@@ -600,17 +610,18 @@ def rebuild_retriever(chunks: List[Dict], k: int = 5):
     return hybrid
 
 
-def rebuild_assistant(retriever, api_key: str = ""):
+def rebuild_assistant(retriever, api_key: str = "", agentic: bool = False):
     """
     Rebuild the StudyAssistantV2 when Stage 3 was not run.
     Called when --stage 4/5 or --chat skips Stage 3.
     """
     step("Rebuilding StudyAssistantV2 …")
-    from stage3_generation import StudyAssistantV2, build_llm
+    from stage3_generation import StudyAssistantV2, AgenticStudyAssistant, build_llm
 
     llm = build_llm(api_key)  # reads GROQ_API_KEY from env if not passed
-    assistant = StudyAssistantV2(retriever, llm, k=5, use_strict_prompt=True)
-    ok("StudyAssistantV2 ready")
+    assistant_cls = AgenticStudyAssistant if agentic else StudyAssistantV2
+    assistant = assistant_cls(retriever, llm, k=5, use_strict_prompt=True)
+    ok(f"{assistant_cls.__name__} ready")
     return assistant
 
 
@@ -663,7 +674,7 @@ def run_pipeline(args: argparse.Namespace) -> None:
             chunks = load_chunks_from_disk()
         if retriever is None:
             retriever = rebuild_retriever(chunks, k=args.k)
-        assistant = run_stage3(retriever, api_key=api_key)
+        assistant = run_stage3(retriever, api_key=api_key, agentic=args.agentic)
 
     # ──────── STAGE 4 ────────────────────────────────────────
     if run_all or args.stage == 4:
@@ -672,7 +683,7 @@ def run_pipeline(args: argparse.Namespace) -> None:
         if retriever is None:
             retriever = rebuild_retriever(chunks, k=args.k)
         if assistant is None:
-            assistant = rebuild_assistant(retriever, api_key)
+            assistant = rebuild_assistant(retriever, api_key, agentic=args.agentic)
         v1_results = run_stage4(assistant, skip=args.skip_eval)
 
     # ──────── STAGE 5 ────────────────────────────────────────
@@ -682,7 +693,7 @@ def run_pipeline(args: argparse.Namespace) -> None:
         if retriever is None:
             retriever = rebuild_retriever(chunks, k=args.k)
         if assistant is None:
-            assistant = rebuild_assistant(retriever, api_key)
+            assistant = rebuild_assistant(retriever, api_key, agentic=args.agentic)
         if not v1_results:
             step("No Stage 4 results — running Stage 4 first …")
             v1_results = run_stage4(assistant, skip=args.skip_eval)
@@ -696,7 +707,7 @@ def run_pipeline(args: argparse.Namespace) -> None:
         if retriever is None:
             retriever = rebuild_retriever(chunks, k=args.k)
         if assistant is None:
-            assistant = rebuild_assistant(retriever, api_key)
+            assistant = rebuild_assistant(retriever, api_key, agentic=args.agentic)
         run_chat(assistant)
 
     # ──────── COMPLETION BANNER ──────────────────────────────

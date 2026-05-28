@@ -124,6 +124,11 @@ python main.py --chunk-size 300     # experiment with chunk size
 python main.py --k 3                # retrieval top-k (default 5)
 python main.py --force-rechunk      # re-run Stage 1 PDF processing
 python main.py --skip-eval          # skip 12-Q loop (faster dev)
+python main.py --agentic            # use Agentic RAG assistant
+
+# 9. Run API + frontend
+uvicorn app:app --reload
+# open http://127.0.0.1:8000
 ```
 
 ---

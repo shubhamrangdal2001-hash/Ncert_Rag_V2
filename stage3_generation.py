@@ -80,6 +80,7 @@ Retrieved Context:
 ])
 
 REFUSAL_TEXT = "i don't have that in my study materials"
+REFUSAL_RESPONSE = "I don't have that in my study materials. Please refer to the relevant chapter."
 
 
 def build_context(retrieved: List[Dict]) -> str:
@@ -101,7 +102,7 @@ def build_context(retrieved: List[Dict]) -> str:
 
 
 # ══════════════════════════════════════════════════════════════
-# LLM  — Groq (llama-3.3-70b-versatile)
+# LLM  — Groq (llama-3.1-8b-instant)
 # ══════════════════════════════════════════════════════════════
 
 def build_llm(api_key: str = ""):
@@ -118,11 +119,11 @@ def build_llm(api_key: str = ""):
             "  Get a free key at: https://console.groq.com/keys"
         )
     llm = ChatGroq(
-        model       = "llama-3.3-70b-versatile",
+        model       = "llama-3.1-8b-instant",
         temperature = 0,
         api_key     = key,
     )
-    ok("LLM: Groq — llama-3.3-70b-versatile")
+    ok("LLM: Groq — llama-3.1-8b-instant")
     return llm
 
 
@@ -243,6 +244,134 @@ class StudyAssistantV2:
         elif result["retrieved_ids"]:
             print(f"\n  Retrieved (no citations): {result['retrieved_ids'][:3]}")
 
+
+class AgenticStudyAssistant(StudyAssistantV2):
+    """
+    Agentic extension of StudyAssistantV2.
+
+    Adds a light planning loop:
+      1. Generate retrieval sub-queries from the user question.
+      2. Retrieve for each sub-query and merge by similarity.
+      3. Generate final answer from merged context.
+      4. If quality checks fail, do one fallback re-plan pass.
+    """
+
+    QUERY_PLAN_PROMPT = ChatPromptTemplate.from_messages([
+        ("system",
+         """You are a retrieval planner for an NCERT Physics RAG system.
+Return up to 3 short retrieval queries (one per line) that can help answer the user question.
+Rules:
+- Keep each line under 12 words.
+- Include formulas/keywords when relevant.
+- No numbering, no bullets, no commentary."""),
+        ("human", "Question: {question}")
+    ])
+
+    def __init__(self, retriever, llm, k: int = 5, use_strict_prompt: bool = True):
+        super().__init__(retriever, llm, k=k, use_strict_prompt=use_strict_prompt)
+        self.plan_chain = self.QUERY_PLAN_PROMPT | self.llm | StrOutputParser()
+
+    def _parse_plan_queries(self, text: str, question: str) -> List[str]:
+        lines = [ln.strip("-• ").strip() for ln in text.splitlines() if ln.strip()]
+        cleaned = []
+        for ln in lines:
+            if ln and ln.lower() not in {q.lower() for q in cleaned}:
+                cleaned.append(ln[:120])
+        if question not in cleaned:
+            cleaned.insert(0, question)
+        return cleaned[:3]
+
+    def _retrieve_agentic(self, question: str) -> List[Dict]:
+        try:
+            plan_text = self.plan_chain.invoke({"question": question})
+            planned_queries = self._parse_plan_queries(plan_text, question)
+        except Exception:
+            planned_queries = [question]
+
+        merged: Dict[str, Dict[str, Any]] = {}
+        for pq in planned_queries:
+            docs = self.retriever.retrieve(pq)
+            for rank, doc in enumerate(docs, 1):
+                cid = doc.get("id", "")
+                if not cid:
+                    continue
+                score = float(doc.get("similarity", 0.0) or 0.0)
+                existing = merged.get(cid)
+                if (existing is None) or (score > float(existing.get("similarity", 0.0) or 0.0)):
+                    doc_copy = dict(doc)
+                    doc_copy["agentic_query"] = pq
+                    doc_copy["agentic_rank"] = rank
+                    merged[cid] = doc_copy
+
+        ranked = sorted(
+            merged.values(),
+            key=lambda d: float(d.get("similarity", 0.0) or 0.0),
+            reverse=True,
+        )
+        return ranked[:self.k]
+
+    def _invoke_llm_with_docs(self, question: str, docs: List[Dict], _retries: int = 3) -> str:
+        context = build_context(docs)
+        for attempt in range(1, _retries + 1):
+            try:
+                return (self.prompt | self.llm | StrOutputParser()).invoke({
+                    "context": context,
+                    "question": question,
+                })
+            except Exception as e:
+                err_str = str(e)
+                if "429" in err_str or "rate_limit" in err_str.lower():
+                    wait = 60
+                    m = re.search(r'try again in (\d+)m([\d.]+)s', err_str)
+                    if m:
+                        wait = int(m.group(1)) * 60 + int(float(m.group(2))) + 5
+                    wait = min(wait, 120)
+                    if attempt < _retries:
+                        time.sleep(wait)
+                        continue
+                return REFUSAL_RESPONSE
+        return REFUSAL_RESPONSE
+
+    def ask(self, question: str, _retries: int = 3) -> Dict[str, Any]:
+        docs = self._retrieve_agentic(question)
+        self._last_docs = docs
+
+        answer_text = self._invoke_llm_with_docs(question, docs, _retries=_retries)
+        cited_ids = re.findall(r'\[Source:\s*([^\]]+)\]', answer_text)
+        cited_ids = list(dict.fromkeys(cited_ids))
+
+        # If non-refusal answer has no citations, do one fallback pass with raw query retrieval.
+        if (REFUSAL_TEXT not in answer_text.lower()) and (not cited_ids):
+            fallback_docs = self.retriever.retrieve(question)
+            if fallback_docs:
+                self._last_docs = fallback_docs
+                answer_text = self._invoke_llm_with_docs(question, fallback_docs, _retries=_retries)
+                cited_ids = re.findall(r'\[Source:\s*([^\]]+)\]', answer_text)
+                cited_ids = list(dict.fromkeys(cited_ids))
+
+        all_chunk_ids = [d.get("id", "") for d in self._last_docs]
+        sources = []
+        for doc in self._last_docs:
+            if doc.get("id", "") in cited_ids:
+                sources.append({
+                    "chunk_id": doc.get("id", ""),
+                    "chapter": doc.get("chapter", ""),
+                    "section": doc.get("section", ""),
+                    "content_type": doc.get("content_type", ""),
+                    "similarity": doc.get("similarity", 0),
+                })
+
+        is_refusal = REFUSAL_TEXT in answer_text.lower()
+        return {
+            "question": question,
+            "answer": answer_text,
+            "sources": sources,
+            "chunk_ids": cited_ids,
+            "retrieved_ids": all_chunk_ids,
+            "is_refusal": is_refusal,
+            "n_retrieved": len(self._last_docs),
+            "agentic": True,
+        }
 
 # ══════════════════════════════════════════════════════════════
 # PROMPT DIFF DEMO  (permissive vs strict on same queries)
@@ -395,8 +524,6 @@ if __name__ == "__main__":
     chunks = json.load(open(base / "chunks/wk10_chunks.json", encoding="utf-8"))
 
     emb   = NeuralEmbedder()
-    texts = [c["text"] for c in chunks]
-    emb.fit_and_embed(texts)
     store = ChromaStore(str(base / "chroma_wk10"), emb)
     hybrid = HybridRetriever(chunks, store, k=5)
 

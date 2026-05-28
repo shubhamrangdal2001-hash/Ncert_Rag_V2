@@ -23,8 +23,6 @@ if sys.stderr.encoding and sys.stderr.encoding.lower() != 'utf-8':
     sys.stderr.reconfigure(encoding='utf-8', errors='replace')
 
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 import chromadb
 from chromadb import PersistentClient
 
@@ -49,17 +47,31 @@ class NeuralEmbedder:
     """
 
     def __init__(self):
+        print("    ▸ Loading HuggingFace embedder (BAAI/bge-small-en-v1.5) …", flush=True)
         from langchain_huggingface import HuggingFaceEmbeddings
         # Nested model_kwargs passes use_safetensors=False through SentenceTransformer
         # → AutoModel.from_pretrained, forcing .bin loading instead of safetensors
         # mmap. This fixes "The paging file is too small" OSError on Windows.
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name   = "BAAI/bge-small-en-v1.5",
-            model_kwargs = {"model_kwargs": {"use_safetensors": False}},
-            encode_kwargs= {"normalize_embeddings": True},
-        )
+        print("      (downloading model if first run, ~200MB …)", flush=True)
+        model_name = "BAAI/bge-small-en-v1.5"
+        try:
+            self.embeddings = HuggingFaceEmbeddings(
+                model_name   = model_name,
+                model_kwargs = {"model_kwargs": {"use_safetensors": False}},
+                encode_kwargs= {"normalize_embeddings": True},
+            )
+            print("    ✓ HuggingFace embedder loaded successfully", flush=True)
+        except Exception as exc:
+            print(f"    ⚠ Failed to load {model_name}: {exc}", flush=True)
+            fallback = "sentence-transformers/all-MiniLM-L6-v2"
+            print(f"    ▸ Falling back to {fallback} …", flush=True)
+            self.embeddings = HuggingFaceEmbeddings(
+                model_name   = fallback,
+                model_kwargs = {"model_kwargs": {"use_safetensors": False}},
+                encode_kwargs= {"normalize_embeddings": True},
+            )
+            print(f"    ✓ Fallback embedder loaded successfully: {fallback}", flush=True)
         self._dim = 384  # bge-small-en dimension
-
 
     def fit_and_embed(self, texts: List[str]) -> np.ndarray:
         """Neural embedders don't need fitting. Just embed."""
@@ -472,9 +484,6 @@ def run(chunks: List[Dict] = None, out_dir: str = None,
 
     if store.is_populated():
         ok(f"Chroma already populated ({store.collection.count()} docs) — skipping re-embed")
-        # Still need to fit the embedder for query-time use
-        texts = [c["text"] for c in chunks]
-        embedder.fit_and_embed(texts)
     else:
         step("Embedding and indexing chunks into Chroma …")
         store.index_chunks(chunks)

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NCERT Agentic RAG</title>
+  <link rel="stylesheet" href="/frontend/styles.css" />
+</head>
+<body>
+  <main class="app">
+    <h1>NCERT Agentic RAG Assistant</h1>
+    <p class="sub">Ask Class 9 Physics questions with source citations.</p>
+
+    <section class="controls">
+      <label>
+        <span>Mode</span>
+        <select id="mode">
+          <option value="agentic" selected>Agentic RAG</option>
+          <option value="classic">Classic RAG</option>
+        </select>
+      </label>
+      <label>
+        <span>Top-k</span>
+        <input id="k" type="number" min="1" max="10" value="5" />
+      </label>
+    </section>
+
+    <section class="ask">
+      <textarea id="question" placeholder="Ask your question..."></textarea>
+      <button id="send">Ask</button>
+    </section>
+
+    <section class="result">
+      <h2>Answer</h2>
+      <pre id="answer">No question asked yet.</pre>
+      <h3>Citations</h3>
+      <ul id="sources"></ul>
+    </section>
+  </main>
+  <script src="/frontend/app.js"></script>
+</body>
+</html>

@@ -1,4 +1,5 @@
-# ─────────────────────────────────────────────────────────────
+# ──────────────
+───────────────────────────────────────────────
 # requirements.txt — NCERT RAG v2.0 (Week 10)
 # Cohort-pinned versions — match these exactly to avoid Tuesday
 # morning support tickets. Do not upgrade without team sign-off.
@@ -10,7 +11,7 @@ langchain-community==0.3.*
 langchain-core==0.3.*
 
 # ── LLM providers ────────────────────────────────────────────
-langchain-groq>=0.1.0              # active: Groq llama-3.3-70b-versatile
+langchain-groq>=0.1.0              # active: Groq llama-3.1-8b-instant
 
 # ── LLM API clients ──────────────────────────────────────────
 groq>=0.9.0
@@ -37,3 +38,9 @@ pandas                             # CSV read/write for eval_scored.csv
 
 # ── Utilities ─────────────────────────────────────────────────
 python-dotenv>=1.0.0               # .env loading
+
+# ── Ragas Evaluation ──────────────────────────────────────────
+ragas>=0.1.0                       # Ragas evaluation framework
+datasets>=2.16.0                   # Hugging Face datasets (required by ragas)
+fastapi>=0.115.0                   # API server for frontend
+uvicorn>=0.30.0                    # ASGI server runtime

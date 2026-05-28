@@ -2,13 +2,19 @@
 ### Week 10 · Production-Grade RAG Pipeline
 **PG Diploma AI-ML & Agentic AI Engineering · IIT Gandhinagar · Cohort 1**
 
-🎥 **Loom Demo:** [Watch 3-min walkthrough](#) ← *(link to be added before submission)*
+---
+
+## 🚀 Live Demo
+
+**[Open the Streamlit Web App →](https://ncertragv2gitagenticrag.streamlit.app/)**
+
+Try the interactive study assistant now! Ask physics questions about NCERT chapters 8–12 and get AI-powered answers with source citations.
 
 ---
 
 ## What This Project Does
 
-A 5-stage Retrieval-Augmented Generation (RAG) system for NCERT Class 9 Physics (Chapters 1–12).  
+A 5-stage **Retrieval-Augmented Generation (RAG)** system for NCERT Class 9 Physics (Chapters 1–12).  
 Students ask physics questions in plain English; the system retrieves grounded answers with source citations or refuses out-of-scope questions.
 
 ---
@@ -149,7 +155,19 @@ Get a free key at: https://console.groq.com/keys
 
 ## Streamlit Web App
 
-Run the interactive Streamlit app locally:
+**Live Deployment:** https://ncertragv2gitagenticrag.streamlit.app/
+
+### Features
+
+- ✅ **Interactive Q&A**: Ask physics questions about NCERT chapters 8–12
+- ✅ **Real-time Retrieval**: Hybrid BM25 + dense embedding search
+- ✅ **Source Citations**: Every answer cites specific chunks with IDs
+- ✅ **Out-of-Scope Detection**: Refuses questions outside the knowledge base
+- ✅ **Agentic Mode**: Advanced reasoning for better answer quality
+- ✅ **Configurable Top-K**: Adjust retrieval depth (1–10 chunks)
+- ✅ **Chat History**: View previous questions in the same session
+
+### Running Locally
 
 ```bash
 # Set up environment
@@ -161,21 +179,28 @@ streamlit run streamlit_app.py
 
 The app will open at `http://localhost:8501`
 
-### Configure & Deploy to Streamlit Cloud
+### Deploy Your Own
 
-1. **Local secrets** (for development): Create `.streamlit/secrets.toml`
+1. **Fork this repo** and push to your GitHub
+2. **Go to** https://share.streamlit.io/deploy
+3. **Select** your repo, branch, and `streamlit_app.py`
+4. **Add secrets** (Streamlit Cloud → App Settings → Secrets):
    ```toml
    GROQ_API_KEY = "your-groq-api-key"
    ```
-   > This file is gitignored — never committed
+5. **Deploy** and share the link
 
-2. **Streamlit Cloud secrets** (for production):
-   - Go to https://share.streamlit.io → your app settings → Secrets
-   - Add the same TOML format
-   - Redeploy
+### Configure Streamlit Locally
 
-3. **Python runtime**: 
-   - `runtime.txt` pins Python 3.11 to avoid `tokenizers`/PyO3 build issues
+Create `.streamlit/secrets.toml` for local development (gitignored):
+
+```toml
+GROQ_API_KEY = "your-groq-api-key"
+```
+
+Get a free Groq API key: https://console.groq.com/keys
+
+> **Note:** `runtime.txt` pins Python 3.11 to avoid tokenizers/PyO3 build issues on Streamlit Cloud.
 
 ---
 

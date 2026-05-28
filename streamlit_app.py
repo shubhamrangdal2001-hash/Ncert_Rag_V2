@@ -8,8 +8,14 @@ import sys
 from pathlib import Path
 
 import streamlit as st
-from stage3_generation import StudyAssistantV2, AgenticStudyAssistant, build_llm
-from main import load_chunks_from_disk, rebuild_retriever
+
+# Lazy imports to prevent startup crashes
+try:
+    from stage3_generation import StudyAssistantV2, AgenticStudyAssistant, build_llm
+    from main import load_chunks_from_disk, rebuild_retriever
+except ImportError as e:
+    st.error(f"⚠️ Failed to import required modules: {e}")
+    st.stop()
 
 
 # Page configuration
